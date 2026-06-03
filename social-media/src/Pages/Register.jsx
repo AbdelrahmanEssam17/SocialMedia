@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signup } from "../Services/authservices";
 const registerSchema = z
   .object({
     name: z.string().min(3).max(30),
@@ -16,7 +17,7 @@ const registerSchema = z
 
     repassword: z.string(),
 
-    date: z.string().min(1),
+    // date: z.string().min(1),
 
     gender: z.enum(["male", "female"]),
   })
@@ -41,22 +42,20 @@ export default function Register() {
     },
   });
 
-  function SendData(userdata) {
-    console.log(userdata);
+  function SendData(userData) {
+    signup(userData);
+    console.log(userData);
   }
 
   return (
     <>
       <div className="bg-white rounded-2xl shadow-2xl py-10 px-6 min-w-md">
         <h1 className="flex justify-center text-2xl mb-4">Register</h1>
-
         <form onSubmit={handleSubmit(SendData)} className="flex flex-col gap-4">
           <input type="text" {...register("name")} placeholder="Name" />
           <p className="text-red-500">{errors.name?.message}</p>
-
           <input type="email" {...register("email")} placeholder="Email" />
           <p className="text-red-500">{errors.email?.message}</p>
-
           <input
             type="password"
             {...register("password")}
@@ -66,13 +65,13 @@ export default function Register() {
 
           <input
             type="password"
-            {...register("repassword")}
+            {...register("rePassword")}
             placeholder="Confirm Password"
           />
           <p className="text-red-500">{errors.repassword?.message}</p>
 
           <div className="flex gap-2">
-            <input {...register("date")} type="date" />
+            <input {...register("dateOfBirth")} type="date" />
 
             <select {...register("gender")} id="gender">
               <option value="">Select your gender</option>
