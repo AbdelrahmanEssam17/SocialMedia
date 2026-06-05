@@ -2,30 +2,42 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 import { signup } from "../Services/authservices";
+
 const registerSchema = z
   .object({
-    name: z.string().min(3).max(30),
+    name: z.string().min(3, "Name must be at least 3 characters"),
 
-    email: z.string().email(),
+    username: z.string().min(3, "Username must be at least 3 characters"),
+
+    email: z.string().email("Invalid email"),
 
     password: z
       .string()
-      .min(8)
+      .min(8, "Password must be at least 8 characters")
       .max(30)
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/),
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+        "Password must contain uppercase, lowercase, number and special character",
+      ),
 
-    repassword: z.string(),
+    rePassword: z.string(),
 
-    // date: z.string().min(1),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
 
-    gender: z.enum(["male", "female"]),
+    gender: z.enum(["male", "female"], {
+      message: "Please select a gender",
+    }),
   })
-  .refine((data) => data.password === data.repassword, {
-    path: ["repassword"],
+  .refine((data) => data.password === data.rePassword, {
+    path: ["rePassword"],
+    message: "Passwords do not match",
   });
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const {
     handleSubmit,
     register,
@@ -34,59 +46,96 @@ export default function Register() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
+      username: "",
       email: "",
       password: "",
-      repassword: "",
-      date: "",
+      rePassword: "",
+      dateOfBirth: "",
       gender: "",
     },
   });
 
-  function SendData(userData) {
-    signup(userData);
-    console.log(userData);
+  async function SendData(userData) {
+    try {
+      console.log("Sending Data:", userData);
+
+      const response = await signup(userData);
+
+      console.log("Signup Success:", response);
+
+      navigate("/login");
+    } catch (error) {
+      console.log("Signup Error:", error.response?.data);
+    }
   }
 
   return (
-    <>
-      <div className="bg-white rounded-2xl shadow-2xl py-10 px-6 min-w-md">
-        <h1 className="flex justify-center text-2xl mb-4">Register</h1>
-        <form onSubmit={handleSubmit(SendData)} className="flex flex-col gap-4">
-          <input type="text" {...register("name")} placeholder="Name" />
-          <p className="text-red-500">{errors.name?.message}</p>
-          <input type="email" {...register("email")} placeholder="Email" />
-          <p className="text-red-500">{errors.email?.message}</p>
-          <input
-            type="password"
-            {...register("password")}
-            placeholder="Password"
-          />
-          <p className="text-red-500">{errors.password?.message}</p>
+    <div className="bg-white rounded-2xl shadow-2xl py-10 px-6 min-w-md">
+      <h1 className="flex justify-center text-2xl mb-4">Register</h1>
 
-          <input
-            type="password"
-            {...register("rePassword")}
-            placeholder="Confirm Password"
-          />
-          <p className="text-red-500">{errors.repassword?.message}</p>
+      <form onSubmit={handleSubmit(SendData)} className="flex flex-col gap-4">
+        <input
+          type="text"
+          {...register("name")}
+          placeholder="Name"
+          className="border p-2 rounded"
+        />
+        <p className="text-red-500">{errors.name?.message}</p>
 
-          <div className="flex gap-2">
-            <input {...register("dateOfBirth")} type="date" />
+        <input
+          type="text"
+          {...register("username")}
+          placeholder="Username"
+          className="border p-2 rounded"
+        />
+        <p className="text-red-500">{errors.username?.message}</p>
 
-            <select {...register("gender")} id="gender">
-              <option value="">Select your gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
+        <input
+          type="email"
+          {...register("email")}
+          placeholder="Email"
+          className="border p-2 rounded"
+        />
+        <p className="text-red-500">{errors.email?.message}</p>
 
-          <p className="text-red-500">{errors.date?.message}</p>
-          <p className="text-red-500">{errors.gender?.message}</p>
-          <button type="submit" className="bg-amber-100 hover:bg-amber-700">
-            Register
-          </button>
-        </form>
-      </div>
-    </>
+        <input
+          type="password"
+          {...register("password")}
+          placeholder="Password"
+          className="border p-2 rounded"
+        />
+        <p className="text-red-500">{errors.password?.message}</p>
+
+        <input
+          type="password"
+          {...register("rePassword")}
+          placeholder="Confirm Password"
+          className="border p-2 rounded"
+        />
+        <p className="text-red-500">{errors.rePassword?.message}</p>
+
+        <input
+          type="date"
+          {...register("dateOfBirth")}
+          className="border p-2 rounded"
+        />
+        <p className="text-red-500">{errors.dateOfBirth?.message}</p>
+
+        <select {...register("gender")} className="border p-2 rounded">
+          <option value="">Select your gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+
+        <p className="text-red-500">{errors.gender?.message}</p>
+
+        <button
+          type="submit"
+          className="bg-amber-200 hover:bg-amber-400 p-2 rounded"
+        >
+          Register
+        </button>
+      </form>
+    </div>
   );
 }

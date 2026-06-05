@@ -1,10 +1,11 @@
-// import axios from "axios";
+import axios from "axios";
 
-// export async function signup(userData) {
-//   const { data } = await axios.post(
-//     "https://linked-posts.routemisr.com/users/signup",
-//     userData,
-//   );
+export async function signup(userData) {
+  const { data } = await axios.post(
+    "https://route-posts.routemisr.com/users/signup",
 
-//   return data;
-// }
+    userData,
+  );
+
+  return data;
+}
